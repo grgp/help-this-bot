@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>VueFire Todo App Demo</title>
+    <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vuefire/1.4.3/vuefire.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="flat-ui.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        /*background-color: #1ABC9C;*/
+        background-color: #ececec;
+        margin: 0;
+      }
+
+      p {
+        font-size: 1.4em;
+        margin-bottom: 30px;
+      }
+
+      h5 {
+        margin-bottom: 40px;
+        margin-top: 40px;
+      }
+
+      #app {
+        overflow: hidden;
+      }
+
+      button { 
+        min-width: 150px;
+        margin: 2px;
+      }
+
+      .tweet-card {
+        padding: 20px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        background-color: #ffffff;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #cfcfcf;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!--
+    Before running this example, make sure to:
+
+    1. cd path/to/vuefire
+    2. npm install
+    3. npm run build
+
+    Then you can open this file in your browser.
+    If you just prefer to see this example with
+    the latest published version of VueFire, you
+    play with the code in this fiddle:
+
+    https://jsfiddle.net/posva/wtyop5jy/
+    -->
+  
+    <div class="container">
+      <h5>Tweets...</h5>
+      <div class="row" id="app">
+        <div class="col-md-10">
+          <div class="tweet-card" v-for="todo in todos">
+            <p>
+              {{ todo.text }}
+            </p>
+              <button class="btn btn-primary" @click="notQuestion(todo)">
+                Not a Question: {{ todo.is_not_question }}
+              </button>
+              <button class="btn btn-warning" @click="isQuestion(todo)">
+                It's a Question: {{ todo.is_question }}
+              </button>
+              <button class="btn btn-danger" @click="isComplaint(todo)">
+                It's a Complaint: {{ todo.is_complaint }}
+              </button>
+              <button class="btn btn-info">
+                Total Votes: {{ todo.votes }}
+              </button>          
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* global Vue, firebase */
+      var vueapp = firebase.initializeApp({
+        apiKey: "AIzaSyCdMZLUkHdsVhyHJEGZCATYfb-y1bqtxUo",
+        authDomain: "is-it-asking-me.firebaseapp.com",
+        databaseURL: "https://is-it-asking-me.firebaseio.com",
+        projectId: "is-it-asking-me",
+        storageBucket: "is-it-asking-me.appspot.com",
+        messagingSenderId: "811216740933"
+      })
+      var db = vueapp.database()
+      var todosRef = db.ref('tweets')
+
+      new Vue({
+        el: '#app',
+        data: {
+          newTodoText: ''
+        },
+        firebase: {
+          todos: todosRef.limitToFirst(5)
+        },
+        methods: {
+          notQuestion: function (todo) {
+            var lastVal = todo.is_not_question
+            todosRef.child(todo['.key']).child('is_not_question').set(lastVal + 1)
+            todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
+          },
+          isQuestion: function (todo) {
+            var lastVal = todo.is_question
+            todosRef.child(todo['.key']).child('is_question').set(lastVal + 1)
+            todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
+          },
+          isComplaint: function (todo) {
+            var lastVal = todo.is_complaint
+            todosRef.child(todo['.key']).child('is_complaint').set(lastVal + 1)
+            todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
+          },
+          updateTodoText: function (todo, newText) {
+            todosRef.child(todo['.key']).child('text').set(newText)
+          },
+          removeTodo: function (todo) {
+            todosRef.child(todo['.key']).remove()
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
