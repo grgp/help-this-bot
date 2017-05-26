@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>VueFire Todo App Demo</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase.js"></script>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vuefire/1.4.3/vuefire.js"></script>
@@ -19,8 +20,8 @@
       }
 
       p {
-        font-size: 1.4em;
-        margin-bottom: 30px;
+        font-size: 1.2em;
+        margin-bottom: 20px;
       }
 
       h5 {
@@ -32,9 +33,16 @@
         overflow: hidden;
       }
 
+      .button-holder {
+        margin: auto;
+        box-sizing: border-box;
+      }
+
       button { 
-        min-width: 150px;
+        min-width: 180px;
         margin: 2px;
+        margin-bottom: 6px !important;
+        box-sizing: border-box;
       }
 
       .tweet-card {
@@ -48,23 +56,23 @@
       }
 
       .list-complete-item {
-        transition: all 1s;
+        transition: all 0.7s;
         display: inline-block;
         margin-right: 10px;
         z-index: 200;
       }
 
       #tweet-stream > div:not(:first-child) {
-        opacity: 0.3;
+        opacity: 0.3;        
         z-index: -200 !important;
       }
 
       .list-complete-enter, .list-complete-leave-to
       /* .list-complete-leave-active for <2.1.8 */ {
         opacity: 0;
-        transition: all 1s;
         transform: translateY(100px);
       } 
+      
       .list-complete-leave-active {
         position: absolute;
       }
@@ -76,7 +84,7 @@
       <h5>Tweets...</h5>
       <div class="row" id="app">
         <div class="col-md-10" >
-          <transition-group id="tweet-stream" tag="p" mode="out-in">
+          <transition-group id="tweet-stream" name="list-complete" tag="p">
           <div 
             class="list-complete-item tweet-card" 
             v-for="(item, index) in todos"
@@ -85,18 +93,23 @@
             <p>
               {{ item.text }}
             </p>
+            <div class="buttons-holder">
               <button class="btn btn-primary" @click="notQuestion(item, index)">
-                Not a Question: {{ item.is_not_question }}
+                Pertanyaan
+                <!--Not a Question: {{ item.is_not_question }}-->
               </button>
               <button class="btn btn-warning" @click="isQuestion(item, index)">
-                It's a Question: {{ item.is_question }}
+                Bukan Pertanyaan
+                <!--It's a Question: {{ item.is_question }}-->
               </button>
               <button class="btn btn-danger" @click="isComplaint(item, index)">
-                It's a Complaint: {{ item.is_complaint }}
+                Complaint
+                <!--It's a Complaint: {{ item.is_complaint }}-->
               </button>
-              <button class="btn btn-info">
+              <!--<button class="btn btn-info">
                 Total Votes: {{ item.votes }}
-              </button>          
+              </button>-->
+            </div>
           </div>
           </transition-group>
         </div>
@@ -116,6 +129,7 @@
       var db = vueapp.database()
       var todosRef = db.ref('tweets')
       var metaRef = db.ref('meta')
+      var startIndex = Math.floor(Math.random() * (14800))
 
       new Vue({
         el: '#app',
@@ -123,26 +137,26 @@
           newTodoText: ''
         },
         firebase: {
-          todos: todosRef.orderByChild("votes").limitToFirst(2)
+          todos: todosRef.orderByKey().startAt(startIndex+"").limitToFirst(32)
         },
         methods: {
           notQuestion: function (todo, index) {
             var lastVal = todo.is_not_question
             todosRef.child(todo['.key']).child('is_not_question').set(lastVal + 1)
             todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
-            // this.todos.splice(index, 1)
+            this.todos.splice(index, 1)
           },
           isQuestion: function (todo, index) {
             var lastVal = todo.is_question
             todosRef.child(todo['.key']).child('is_question').set(lastVal + 1)
             todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
-            // this.todos.splice(index, 1)
+            this.todos.splice(index, 1)
           },
           isComplaint: function (todo, index) {
             var lastVal = todo.is_complaint
             todosRef.child(todo['.key']).child('is_complaint').set(lastVal + 1)
             todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
-            // this.todos.splice(index, 1)
+            this.todos.splice(index, 1)
           },
           updateTodoText: function (todo, newText) {
             todosRef.child(todo['.key']).child('text').set(newText)
