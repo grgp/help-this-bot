@@ -45,30 +45,23 @@
         border-bottom: 2px solid #cfcfcf;
         overflow: hidden;
       }
+
+      #tweet-stream > div:not(:first-child) {
+        display: none;
+      }
     </style>
   </head>
   <body>
 
-    <!--
-    Before running this example, make sure to:
-
-    1. cd path/to/vuefire
-    2. npm install
-    3. npm run build
-
-    Then you can open this file in your browser.
-    If you just prefer to see this example with
-    the latest published version of VueFire, you
-    play with the code in this fiddle:
-
-    https://jsfiddle.net/posva/wtyop5jy/
-    -->
-  
     <div class="container">
       <h5>Tweets...</h5>
       <div class="row" id="app">
-        <div class="col-md-10">
-          <div class="tweet-card" v-for="todo in todos">
+        <div class="col-md-10" id="tweet-stream">
+          <div 
+            class="tweet-card" 
+            v-for="(todo, index) in todos" 
+            v-on:remove="todos.splice(index, 1)"
+          >
             <p>
               {{ todo.text }}
             </p>
@@ -101,6 +94,7 @@
       })
       var db = vueapp.database()
       var todosRef = db.ref('tweets')
+      var metaRef = db.ref('meta')
 
       new Vue({
         el: '#app',
@@ -108,13 +102,14 @@
           newTodoText: ''
         },
         firebase: {
-          todos: todosRef.limitToFirst(5)
+          todos: todosRef.orderByChild("votes").limitToFirst(5)
         },
         methods: {
           notQuestion: function (todo) {
             var lastVal = todo.is_not_question
             todosRef.child(todo['.key']).child('is_not_question').set(lastVal + 1)
             todosRef.child(todo['.key']).child('votes').set(todo.votes + 1)
+            this.todos.splice(index, 1)
           },
           isQuestion: function (todo) {
             var lastVal = todo.is_question
